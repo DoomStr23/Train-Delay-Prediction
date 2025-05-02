@@ -58,12 +58,12 @@ if response.status_code == 200:
         if not df.empty:
             file_exists = os.path.isfile("train_data_log.csv")
             df.to_csv("train_data_log.csv", mode='a', index=False, header=not file_exists)
-            print("✅ Data appended to train_data_log.csv")
+            print("Data appended to train_data_log.csv")
         else:
-            print("⚠️ No data to save.")
+            print("No data to save.")
 
     except ET.ParseError as e:
-        print(f"❌ XML Parse Error: {e}")
+        print(f"XML Parse Error: {e}")
 else:
-    print(f"❌ HTTP Error {response.status_code}: {response.text}")
+    print(f"HTTP Error {response.status_code}: {response.text}")
 
