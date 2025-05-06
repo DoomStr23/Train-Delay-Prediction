@@ -7,6 +7,7 @@ def clean_train_data(input_file="train_data_log.csv", output_file="clean_train_d
     """
     Clean and process Deutsche Bahn train data, adding delay and other useful information.
     Data is sorted chronologically by date and time.
+    Duplicates are removed based on station_eva, direction, train_id, and timestamp.
     
     Args:
         input_file: Path to the input CSV file
@@ -21,6 +22,14 @@ def clean_train_data(input_file="train_data_log.csv", output_file="clean_train_d
         
         # Make a copy to avoid warnings
         clean_df = df.copy()
+        
+        # Remove duplicates based on station_eva, direction, train_id, and timestamp
+        # These fields should uniquely identify a train arrival/departure event
+        print("\nRemoving duplicate records...")
+        original_count = len(clean_df)
+        clean_df = clean_df.drop_duplicates(subset=['station_eva', 'direction', 'train_id', 'timestamp'])
+        duplicate_count = original_count - len(clean_df)
+        print(f"Removed {duplicate_count} duplicate records. {len(clean_df)} records remain.")
         
         # Debug: Display the first few rows of raw data
         print("\nFirst few rows of raw data:")
@@ -117,11 +126,6 @@ def clean_train_data(input_file="train_data_log.csv", output_file="clean_train_d
                 hour = int(ts_str[6:8])
                 minute = int(ts_str[8:10])
                 
-                # Ensure the date is between April 30 and May 3
-                if not ((month == 4 and day >= 30) or (month == 5 and day <= 3)):
-                    # If outside our expected range, print debug info
-                    print(f"WARNING: Date {year}-{month:02d}-{day:02d} is outside expected range.")
-                    
                 return pd.Timestamp(year, month, day, hour, minute)
             except:
                 return pd.NaT
@@ -137,12 +141,6 @@ def clean_train_data(input_file="train_data_log.csv", output_file="clean_train_d
                 if match:
                     year, month, day, hour, minute, second, ms = match.groups()
                     year = int("20" + year)
-                    
-                    # Ensure the date is between April 30 and May 3
-                    if not ((int(month) == 4 and int(day) >= 30) or (int(month) == 5 and int(day) <= 3)):
-                        # If outside our expected range, print debug info
-                        print(f"WARNING: Date {year}-{month}-{day} is outside expected range.")
-                        
                     return pd.Timestamp(year, int(month), int(day), int(hour), int(minute), int(second), int(ms) * 1000)
                 else:
                     return pd.to_datetime(tts_str, format="%y-%m-%d %H:%M:%S.%f", errors='coerce')
@@ -159,12 +157,9 @@ def clean_train_data(input_file="train_data_log.csv", output_file="clean_train_d
         for date in sorted(planned_dates):
             print(f"  - {date}")
         
-        # Filter out dates outside our expected range if needed
-        valid_dates = [(pd.Timestamp('2025-04-30').date() <= date <= pd.Timestamp('2025-05-03').date()) 
-                      for date in clean_df['planned_datetime'].dt.date]
-        clean_df = clean_df[valid_dates]
+        # Removed date range filter - we're keeping all dates now
         
-        print(f"After filtering, {len(clean_df)} records remain")
+        print(f"After processing, {len(clean_df)} records remain")
         
         # Calculate delay in minutes
         print("Calculating delays...")
@@ -202,9 +197,9 @@ def clean_train_data(input_file="train_data_log.csv", output_file="clean_train_d
         def get_status(delay):
             if pd.isna(delay):
                 return 'Unknown'
-            if delay <= 0:
+            if delay < 1:
                 return 'On time'
-            elif delay <= 5:
+            elif delay < 5:
                 return 'Slight delay'
             elif delay <= 15:
                 return 'Moderate delay'
