@@ -6,7 +6,7 @@ import os
 # API credentials
 api_key = "X"  # Replace with your actual API key
 headers = {
-    "DB-Client-Id": "7182678e8cc6025ced2de2641313ecf7",
+    "DB-Client-Id": "X", # Replace with your actual client ID
     "DB-Api-Key": api_key,
     "accept": "application/xml"
 }
