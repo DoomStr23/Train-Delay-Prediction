@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 # API credentials
-api_key = "96a9d41573dcc4ae5f89ee42770e0100"
+api_key = "X"  # Replace with your actual API key
 headers = {
     "DB-Client-Id": "7182678e8cc6025ced2de2641313ecf7",
     "DB-Api-Key": api_key,
